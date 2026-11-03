@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>隱形規則法庭｜模擬版</title>
+<style>
+:root{--bg:#e9eeea;--card:#fbfcfa;--ink:#17211e;--g:#1f4d43;--st:#b8322a;--mu:#5d6b66;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101a17;--card:#17241f;--ink:#e6eee9;--g:#5fb59f;--st:#ff7a6e;--mu:#9bb0a8}}
+:root[data-theme="dark"]{--bg:#101a17;--card:#17241f;--ink:#e6eee9;--g:#5fb59f;--st:#ff7a6e;--mu:#9bb0a8}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.7 "PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif}
+#app{max-width:480px;margin:0 auto;padding:20px 16px 48px}
+h1,h2{font-family:"Noto Serif TC","Songti TC","PMingLiU",serif;margin:.4em 0}
+h1{font-size:2.2rem;letter-spacing:.15em}
+h2{font-size:1.5rem}
+.mu{color:var(--mu);font-size:.9rem;margin:.3em 0}
+button{display:block;width:100%;margin:8px 0;padding:13px 14px;border:1.5px solid var(--ink);border-radius:6px;background:var(--card);color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--g);outline-offset:2px}
+button.big{background:var(--g);border-color:var(--g);color:var(--bg);font-weight:700;text-align:center}
+.tabs{display:flex;gap:6px;margin-bottom:12px}
+.tabs button{margin:0;padding:8px 4px;text-align:center;font-size:.85rem}
+.tabs button.on{background:var(--ink);color:var(--bg)}
+.card{background:var(--card);border-left:5px solid var(--g);padding:14px 16px;margin:12px 0}
+.dim{opacity:.65}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.row button{width:auto;flex:0 0 auto}
+input{flex:1;min-width:0;padding:13px;border:1.5px solid var(--ink);border-radius:6px;background:var(--card);color:var(--ink);font:inherit}
+.chip{padding:6px 12px;border:1.5px solid var(--g);border-radius:99px}
+.ticket{border:2px dashed var(--st);color:var(--st);padding:14px;margin:12px 0;transform:rotate(-2deg);font-weight:700}
+.bsod{background:#0a58ca;color:#fff;padding:32px 24px;min-height:70vh;font-family:monospace;font-size:1.1rem}
+.tools{margin-top:24px;border-top:1px solid var(--mu);padding-top:8px}
+.tools button{font-size:.85rem;padding:8px 10px}
+:root{--wall:#cfd9d3;--wall2:#9fb3aa;--win:#e8f1f5;--wood:#6b4a32;--wood2:#4a3222}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--wall:#2a3b35;--wall2:#1b2823;--win:#35515c;--wood:#5a3f2b;--wood2:#3b2a1d}}
+:root[data-theme="dark"]{--wall:#2a3b35;--wall2:#1b2823;--win:#35515c;--wood:#5a3f2b;--wood2:#3b2a1d}
+.scene{position:relative;height:320px;overflow:hidden;border-radius:6px;touch-action:pan-y;background:var(--wall2)}
+.ly{position:absolute;transform:translate(calc(var(--mx,0)*var(--d)*-1px),calc(var(--my,0)*var(--d)*-.6px));transition:transform .15s}
+.fig{background:var(--ink);opacity:.8;border-radius:45% 45% 0 0}
+.fig::before{content:"";position:absolute;left:27%;top:-42%;width:46%;height:46%;border-radius:50%;background:inherit}
+.scr{background:#0d1512;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:.6rem;text-align:center;padding:4px}
+.stamp{position:absolute;left:50%;top:38%;margin-left:-70px;width:140px;padding:10px;border:4px solid var(--st);color:var(--st);font-weight:900;font-size:1.4rem;text-align:center;background:color-mix(in srgb,var(--card) 70%,transparent);transform:rotate(-8deg);animation:drop .5s .4s cubic-bezier(.2,1.6,.4,1) both;z-index:9}
+@keyframes drop{from{transform:translateY(-220px) rotate(-14deg) scale(1.8);opacity:0}to{transform:rotate(-8deg);opacity:1}}
+.glitch{position:fixed;inset:0;z-index:50;overflow:hidden;background:repeating-linear-gradient(0deg,#111 0 3px,#222 3px 6px);animation:fl .15s steps(2) 12}
+@keyframes fl{50%{filter:invert(1) hue-rotate(90deg)}}
+.win{position:absolute;width:55%;background:#ece9d8;color:#000;border:2px solid #000;font-size:.8rem;opacity:0;animation:pop .1s both}
+.win b{display:block;background:#0a246a;color:#fff;padding:2px 6px}
+.win span{display:block;padding:10px}
+@keyframes pop{to{opacity:1}}
+.bsod{position:absolute;inset:0;opacity:0;animation:pop .1s 2.4s both}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01s!important;animation-iteration-count:1!important}}
+.scene{--u:1px}
+.stage{position:fixed;inset:0;z-index:5;background:var(--bg)}
+.stage .scene{position:absolute;inset:0;height:auto;border-radius:0;--u:min(.28vh,.5vw)}
+.hud{position:absolute;left:0;right:0;bottom:0;max-height:60vh;overflow:auto;z-index:8;padding:40px 16px calc(16px + env(safe-area-inset-bottom,0px));background:linear-gradient(transparent,color-mix(in srgb,var(--bg) 90%,transparent) 30%)}
+.hudin{max-width:480px;margin:0 auto}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const R=[
+{q:'手扶梯上',a:'靠右站好，把左側讓給趕時間的人',b:'站在左側，慢慢欣賞風景',ev:['🧍 有人站在左側，後方的人默默繞過','🧳 行李箱放在左側，沒有人出聲','🎧 戴耳機的人站在左邊哼歌'],jq:['你知道手扶梯標示要靠右站嗎？','哪一條法律規定不能站左邊？','你有因此傷害任何人嗎？']},
+{q:'高鐵車廂裡',a:'保持安靜，不打擾陌生人',b:'大聲跟旁邊的旅客打招呼',ev:['🚄 兩位陌生旅客聊得很開心','📖 有人闔上書，轉頭加入對話','😄 整排座位都在笑'],jq:['車廂是公共空間，你不覺得吵嗎？','你事先問過對方願不願意聊嗎？','有人真的因此受傷了嗎？']},
+{q:'收到很爛的生日禮物',a:'微笑說謝謝，回家再處理',b:'當場說「這我不要」',ev:['🎁 有人當場說不喜歡，對方笑了','💬 朋友說：下次我送你更好的','🤝 兩人最後交換了禮物'],jq:['你不怕傷了對方的心嗎？','送禮不是心意最重要嗎？','你說了實話，有錯嗎？']}];
+const ENDS=['電梯按鈕體驗','對著高鐵旅客大聲說話，沒想到對方決定跟你一起聊天','收到很爛的生日禮物，直接丟對方臉上','走到博愛座，直接用屁股擠走老人'];
+const ROLE={AY:'法官',AN:'證人',BY:'旁聽',BN:'被告'};
+let S,T;
+const $=s=>document.querySelector(s);
+const B=(t,f,c='')=>`<button class="${c}" onclick="${f}">${t}</button>`;
+function init(){try{document.fullscreenElement&&document.exitFullscreen()}catch(e){}S={scr:'start',p:0,r:0,pk:[{},{},{},{}],won:[0,0,0,0],room:'',def:null};T=[0,1,2,3].map(()=>({st:0,conf:false,ev:null,asked:[]}))}
+const role=p=>{const k=S.pk[p];return k.ab&&k.yn?ROLE[k.ab+k.yn]:null};
+const done=()=>S.pk.every(k=>k.ab&&k.yn);
+function defs(){const d=[0,1,2,3].filter(p=>role(p)=='被告');return d.length?d:(S.def!=null?[S.def]:[])}
+function go(x){S.scr=x;render()}
+function setp(p){S.p=p;render()}
+function create(){S.room=String(1000+Math.floor(Math.random()*9000));go('lobby')}
+function join(){const v=$('#rm').value.trim();if(!/^\d{4}$/.test(v)){alert('請輸入 4 位數房號');return}S.room=v;go('lobby')}
+function pick(k,v){S.pk[S.p][k]=v;render()}
+function rnd(){S.pk.forEach((k,i)=>{if(i!=S.p){k.ab=Math.random()<.5?'A':'B';k.yn=Math.random()<.5?'Y':'N'}});render()}
+function allA(){S.pk.forEach(k=>{k.ab='A';k.yn='Y'});render()}
+function court(){
+ if(S.pk.every(k=>k.ab=='A'&&k.yn=='Y')){try{document.documentElement.requestFullscreen?.().catch(()=>{})}catch(e){}go('crash');setTimeout(()=>{init();render()},6500);return}
+ T.forEach(t=>{t.st=0;t.conf=false;t.ev=null;t.asked=[]});S.def=null;go('court')}
+function ans(c){const t=T[S.p];if(c==0)t.conf=true;t.st++;render()}
+function asked(i){T[S.p].asked.push(i);render()}
+function evi(i){T[S.p].ev=i;render()}
+function desig(x){S.def=x;render()}
+function next(){defs().forEach(d=>{if(!T[d].conf)S.won[d]++});S.pk=[{},{},{},{}];if(S.r<R.length-1){S.r++;go('ask')}else go('end')}
+function render(){
+ const s=S.scr,p=S.p,r=R[S.r],k=S.pk[p];let h='';
+ if(['ask','court','end'].includes(s))h+=`<div class="tabs">${[0,1,2,3].map(i=>B('玩家 '+(i+1),`setp(${i})`,i==p?'on':'')).join('')}</div><p class="mu">模擬版：用上方標籤切換玩家視角（正式版每人一個螢幕）</p>`;
+ if(s=='start')h=`<h1>隱形規則法庭</h1><p class="mu">模擬版</p>${B('創建房間',"create()",'big')}<p class="mu">或輸入房號加入</p><div class="row"><input id="rm" inputmode="numeric" maxlength="4" placeholder="4 位數房號" aria-label="房號">${B('加入','join()')}</div>`;
+ else if(s=='lobby')h=`<h2>房號 ${S.room}</h2><p class="mu">系統隨即分配座位</p><div class="row">${[1,2,3,4].map(i=>`<span class="chip">玩家 ${i}</span>`).join('')}</div>${B('開始遊戲',"go('notice')",'big')}`;
+ else if(s=='notice')h=`<h2>遊戲注意事項</h2><div class="card">請暫時放下既有的觀念與認知，嘗試不受他人看法、社會規範及過往經驗影響，以最初的直覺與獨立思考進行遊戲。<br><br>請勿預設任何事物的對錯，並重新思考每一個選擇背後的理由。</div>${B('開始第一輪',"go('ask')",'big')}`;
+ else if(s=='ask'){
+  h+=`<p class="mu">第 ${S.r+1} / ${R.length} 輪</p><h2>${r.q}</h2>`;
+  if(!k.ab)h+=B('A　'+r.a,"pick('ab','A')")+B('B　'+r.b,"pick('ab','B')");
+  else if(!k.yn)h+=`<div class="card">庭前問題<br><b>你認為「${r.b}」真的不應該嗎？</b></div>${B('是',"pick('yn','Y')")}${B('否',"pick('yn','N')")}`;
+  else h+=`<div class="card">你的選擇已送出（${S.pk.filter(x=>x.ab&&x.yn).length} / 4 位玩家完成）</div>`+(done()?B('進入開庭','court()','big'):'');
+  h+=`<div class="tools"><p class="mu">測試工具</p>${B('隨機幫其他玩家選',"rnd()")}${B('全員選 A＋是（看當機畫面）',"allA()")}</div>`;
+ }
+ else if(s=='court'){
+  const ds=defs(),isD=ds.includes(p),t=T[p],ro=isD?(role(p)=='被告'?'被告':'被告（被指定）'):role(p);
+  h+=`<p class="mu">你的身分：<b>${ro}</b>　${r.q}（滑動畫面看景深）</p>`;
+  if(ro=='法官'){
+   if(!ds.length){const c=[0,1,2,3].filter(x=>role(x)=='旁聽');h+=c.length?`<p>本輪沒有被告，請從旁聽席指定一位：</p>`+c.map(x=>B('玩家 '+(x+1),`desig(${x})`)).join(''):'<p>本輪沒有被告。</p>'}
+   else h+=`<p class="mu">被告：${ds.map(x=>'玩家 '+(x+1)).join('、')}　點選要質問的問題</p>`+r.jq.map((q,i)=>t.asked.includes(i)?`<div class="card dim">你問：${q}<br>被告：我沒有錯。</div>`:B(q,`asked(${i})`)).join('');
+  }else if(isD){
+   if(t.st<3)h+=`<div class="card">法官：${r.jq[t.st]}</div>`+['🙇 承認，我錯了','🤔 反問：誰規定的？','🛡 堅持：我沒有做錯'].map((x,i)=>B(x,`ans(${i})`)).join('');
+   else h+=`<div class="card">${t.conf?'你認罪了。這次沒有無罪結局。':'你沒有認罪，法官只能宣判無罪。'}</div>`;
+   if(role(p)!='被告')h+=`<p class="mu">你選了 B，也認為自己可能有罪，所以收到罰單。</p>`;
+  }else if(ro=='證人')h+=`<p>點選一張照片作為證據</p>`+r.ev.map((e,i)=>B((t.ev==i?'✔ ':'')+e,`evi(${i})`)).join('')+(t.ev!=null?'<p class="mu">證據已提交</p>':'');
+  else h+=`<p class="mu">你在旁聽席。減刑，但仍收到一張罰單。</p>`;
+  h+=B(S.r<R.length-1?'本輪結束，下一輪':'前往結尾','next()','big');
+ }
+ else if(s=='end'){
+  h+=S.won[p]>0?`<h2>無罪</h2><p>你沒有認罪，所以你贏了。這些「不能做的事」，其實從來沒有人真的規定：</p><div class="card">${ENDS.map(x=>'・'+x).join('<br>')}</div>`:`<h2>結算</h2><p>這次你沒有以被告身分勝訴，所以沒有無罪結局。</p>`;
+  h+=B('再玩一次','init();render()','big');
+ }
+ else if(s=='crash')h=`<div class="glitch">${[['錯誤','無法選擇','8%','10%',.3],['警告','所有人都同意了','30%','30%',.7],['系統','找不到不同意見','12%','52%',1.2],['錯誤','0x000A1','35%','72%',1.7]].map(w=>`<div class="win" style="left:${w[2]};top:${w[3]};animation-delay:${w[4]}s"><b>${w[0]}</b><span>${w[1]}</span></div>`).join('')}<div class="bsod">:(<br><br>你的電腦遇到問題，需要重新啟動。<br><br>錯誤代碼：EVERYONE_AGREED<br><br>即將回到開始畫面…</div></div>`;
+ if(s=='court')h=stage(h);$('#app').innerHTML=h;par();
+}
+const L=(d,st,c='',x='')=>`<div class="ly ${c}" style="--d:${d};${st}">${x}</div>`;
+const F=(d,l,t,w)=>L(d,`left:${l}%;top:${t}%;width:calc(${w}*var(--u));height:calc(${w*1.2}*var(--u))`,'fig');
+const BN=(d,l,t,w,h,c='wood')=>L(d,`left:${l}%;top:${t}%;width:${w}%;height:${h}%;background:var(--${c})`);
+const NEAR=h=>L(14,`left:-6%;right:-6%;bottom:-6px;height:${h}%;background:var(--wood2)`);
+function scene(ro,r,tk){
+ const e=[0,1,2,3].map(x=>T[x].ev).find(v=>v!=null);
+ let s=L(1,'inset:-14px;background:linear-gradient(var(--wall),var(--wall2))')+BN(2,72,6,18,24,'win')+L(3,'left:4%;top:5%;width:30%;height:24%','scr',e!=null?`<div style="font-size:1.4rem">${r.ev[e].slice(0,2)}</div>${r.ev[e].slice(2)}`:'證據投影幕');
+ if(ro.startsWith('被告'))s+=F(6,43,8,86)+BN(5,8,32,84,30)+NEAR(20);
+ else if(ro=='法官')s+=BN(5,38,50,24,26)+F(6,43,36,52)+F(8,6,58,50)+F(8,16,66,50)+F(8,78,60,50)+F(8,88,68,46)+NEAR(16);
+ else if(ro=='證人')s+=F(6,10,22,70)+BN(5,2,40,44,28)+F(6,70,36,60)+BN(5,60,56,34,26)+L(14,'left:-6%;right:-6%;bottom:-6px;height:30%;background:var(--wood2)','',`<div style="font-size:1.8rem;text-align:center;padding-top:6px">${r.ev.map(x=>x.slice(0,2)).join('　')}</div>`);
+ else s+=F(6,45,16,40)+BN(5,30,30,40,20)+F(6,45,44,30)+BN(5,40,52,20,16)+F(12,6,70,120)+F(13,30,78,130)+F(12,58,72,120)+F(13,80,80,110);
+ return `<div class="scene">${s}${tk?'<div class="stamp">🧾 罰單</div>':''}</div>`}
+function stage(inner){const p=S.p,r=R[S.r],ds=defs(),isD=ds.includes(p),ro=isD?(role(p)=='被告'?'被告':'被告（被指定）'):role(p);return `<div class="stage">${scene(ro,r,ro=='旁聽'||ro=='被告（被指定）')}<div class="hud"><div class="hudin">${inner}</div></div></div>`}
+function par(){const sc=$('.scene');if(!sc)return;const mv=e=>{const b=sc.getBoundingClientRect(),t=e.touches?e.touches[0]:e;sc.style.setProperty('--mx',((t.clientX-b.left)/b.width-.5)*2);sc.style.setProperty('--my',((t.clientY-b.top)/b.height-.5)*2)};const t0=$('.stage')||sc;t0.onpointermove=mv;t0.ontouchmove=mv}
+init();render();
+</script>
+</body>
+</html>
